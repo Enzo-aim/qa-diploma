@@ -1,19 +1,76 @@
+// Объявление плагинов для сборки проекта
 plugins {
-    id 'java'
+    id 'java'// Плагин для Java-проектов, добавляет задачи компиляции, тестирования и сборки
+    id 'io.qameta.allure' version '2.12.0'
 }
 
-group = 'ru.netology'
-version = '1.0-SNAPSHOT'
+// Метаданные проекта
+group = 'ru.netology' // Группа проекта (обычно используется обратный домен)
+version = '1.0-SNAPSHOT' // Версия проекта (SNAPSHOT означает разработку)
 
+// Конфигурация репозиториев для загрузки зависимостей
 repositories {
-    mavenCentral()
+    mavenCentral()// Основной репозиторий Maven для загрузки библиотек
+}
+allure {
+    version = "2.27.0"
+    useJUnit5 {
+        version = "2.27.0"
+    }
 }
 
+
+// Секция зависимостей проекта
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // JUnit 5 - основной фреймворк для тестирования
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+
+    // JavaFaker - библиотека для генерации тестовых данных (имена, адреса и т.д.)
+    testImplementation 'com.github.javafaker:javafaker:1.0.2'
+
+    // MySQL Connector - драйвер для подключения к базе данных MySQL
+    testImplementation 'mysql:mysql-connector-java:8.0.32'
+
+    // Apache Commons DbUtils - утилиты для работы с JDBC (упрощение работы с БД)
+    testImplementation 'commons-dbutils:commons-dbutils:1.7'
+
+    // Selenide - фреймворк для автоматизации веб-тестирования (надстройка над Selenium)
+    testImplementation 'com.codeborne:selenide:6.17.2'
+
+    // JUnit BOM (Bill Of Materials) - управление версиями зависимостей JUnit
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+
+    // Allure Selenide - интеграция Selenide с Allure для красивых отчетов о тестировании
+    testImplementation 'io.qameta.allure:allure-selenide:2.20.1'
+
+    // PostgreSQL JDBC Driver - драйвер для подключения к базе данных PostgreSQL
+    testImplementation 'org.postgresql:postgresql:42.2.24'
+
+    testImplementation "io.qameta.allure:allure-selenide:2.27.0"
+
 }
 
+// Конфигурация задачи тестирования
 test {
+    // Используем JUnit Platform (JUnit 5) для запуска тестов
     useJUnitPlatform()
+
+    // Настройка системных свойств для тестов
+    // Управление режимом Selenide (headless - без графического интерфейса)
+    systemProperty "selenide.headless", System.getProperty("selenide.headless")
+
+    // URL базы данных по умолчанию - PostgreSQL на localhost:5432
+    // Можно переопределить через командную строку: -Ddb.url=...
+    systemProperty "db.url", System.getProperty("db.url", "jdbc:postgresql://localhost:5432/app")
+
+    // Пользователь БД (по умолчанию 'app')
+    systemProperty "db.user", System.getProperty("db.user", "app")
+
+    // Пароль БД (по умолчанию 'pass')
+    systemProperty "db.password", System.getProperty("db.password", "pass")
+
+    // URL тестируемой системы (SUT - System Under Test)
+    // По умолчанию http://localhost:8080
+    systemProperty "sut.url", System.getProperty("sut.url", "http://localhost:8080")
+
 }

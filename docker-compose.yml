@@ -1,32 +1,49 @@
+# Указываем версию формата docker-compose файла
+version: '3.7'
 
+# Секция определения сервисов (контейнеров)
 services:
-  mysql_db:
-    image: mysql:8
-    restart: always
+  # Сервис MySQL базы данных
+  mysqldb:
+    # Используем официальный образ MySQL версии 8.0.31
+    image: mysql:8.0.31
+    # Пробрасываем порты: порт 3306 на хосте -> порт 3306 в контейнере
     ports:
-      - "3306:3306"
+      - '3306:3306'
+
+      # Переменные окружения для настройки MySQL
     environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: mydb
-      MYSQL_USER: app
-      MYSQL_PASSWORD: pass
-    volumes:
-      - ./dbdata:/var/lib/mysql/
-##################################################
-  postgres:
-    image: postgres:latest
-    container_name: postgres_container
-    environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: postgres_db
-      PGDATA: /var/lib/postgresql/data/pgdata
+      # Устанавливает случайный пароль для root пользователя (повышает безопасность)
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      # Создает базу данных с именем 'app' при старте контейнера
+      - MYSQL_DATABASE=app
+      # Создает пользователя 'app' с правами на созданную базу данных
+      - MYSQL_USER=app
+      # Устанавливает пароль 'pass' для созданного пользователя
+      - MYSQL_PASSWORD=pass
+
+      # Сервис PostgreSQL базы данных
+  postgresdb:
+    # Используем легковесный образ PostgreSQL на Alpine Linux (версия 14)
+    image: postgres:14-alpine
+    # Пробрасываем порты: порт 5432 на хосте -> порт 5432 в контейнере
     ports:
-      - "5432:5432"
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data/pgdata
-###################################################
+      - '5432:5432'
+
+    # Переменные окружения для настройки PostgreSQL
+    environment:
+      # Создает базу данных с именем 'app'
+      - POSTGRES_DB=app
+      # Создает пользователя 'app' с правами суперпользователя
+      - POSTGRES_USER=app
+      # Устанавливает пароль 'pass' для созданного пользователя
+      - POSTGRES_PASSWORD=pass
+
+      # Сервис Node.js приложения
   node:
+    # Собираем образ из Dockerfile в текущей директории (.)
     build: .
+    # Пробрасываем порты: порт 9999 на хосте -> порт 9999 в контейнере
+    # Приложение будет доступно по адресу http://localhost:9999
     ports:
       - "9999:9999"
